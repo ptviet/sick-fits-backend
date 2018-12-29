@@ -39,7 +39,8 @@ const Mutation = {
     // Check for permission
     //
     // Delete the Item
-    return ctx.db.mutation.deleteItem({ where }, info);
+    const deleted = await ctx.db.mutation.deleteItem({ where }, info);
+    return deleted;
   },
 
   // User Sign Up
@@ -60,7 +61,7 @@ const Mutation = {
     );
 
     // Create JWT Token
-    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
+    const token = await jwt.sign({ userId: user.id }, process.env.APP_SECRET);
     // Set the jwt as a cookie on the response
     ctx.response.cookie('sickfits_token', token, {
       httpOnly: true,
@@ -73,7 +74,7 @@ const Mutation = {
   // User Sign In
   async signin(parent, { email, password }, ctx, info) {
     // Check if user exists
-    const user = await ctx.db.query.user({ where: { email } });
+    const user = await ctx.db.query.user({ where: { email } }, info);
     if (!user) {
       throw new Error(`No user found with email: ${emnail}`);
     }
@@ -83,7 +84,7 @@ const Mutation = {
       throw new Error('Invalid password.');
     }
     // Generate JWT Token
-    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
+    const token = await jwt.sign({ userId: user.id }, process.env.APP_SECRET);
     // Set the cookie with the token
     ctx.response.cookie('sickfits_token', token, {
       httpOnly: true,
@@ -91,6 +92,12 @@ const Mutation = {
     });
     // Return the user
     return user;
+  },
+
+  // User Sign Out
+  async signout(parent, args, ctx, info) {
+    ctx.response.clearCookie('sickfits_token');
+    return { message: 'See you later!' };
   }
 };
 
