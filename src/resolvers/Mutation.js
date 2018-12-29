@@ -62,7 +62,7 @@ const Mutation = {
     // Create JWT Token
     const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
     // Set the jwt as a cookie on the response
-    ctx.response.cookie('token', token, {
+    ctx.response.cookie('sickfits_token', token, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year cookie
     });
