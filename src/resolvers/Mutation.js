@@ -68,6 +68,29 @@ const Mutation = {
     });
     // Return the user
     return user;
+  },
+
+  // User Sign In
+  async signin(parent, { email, password }, ctx, info) {
+    // Check if user exists
+    const user = await ctx.db.querry.user({ where: { email } });
+    if (!user) {
+      throw new Error(`No user found with email: ${emnail}`);
+    }
+    // Verify the password
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      throw new Error('Invalid password.');
+    }
+    // Generate JWT Token
+    const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
+    // Set the cookie with the token
+    ctx.response.cookie('sickfits_token', token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year cookie
+    });
+    // Return the user
+    return user;
   }
 };
 
