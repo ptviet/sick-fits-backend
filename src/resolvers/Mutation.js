@@ -74,9 +74,9 @@ const Mutation = {
   // User Sign In
   async signin(parent, { email, password }, ctx, info) {
     // Check if user exists
-    const user = await ctx.db.query.user({ where: { email } }, info);
+    const user = await ctx.db.query.user({ where: { email } });
     if (!user) {
-      throw new Error(`No user found with email: ${emnail}`);
+      throw new Error(`No user found with email: ${email}`);
     }
     // Verify the password
     const valid = await bcrypt.compare(password, user.password);
