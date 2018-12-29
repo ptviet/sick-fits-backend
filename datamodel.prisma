@@ -5,7 +5,7 @@ type User {
   password: String!
   resetToken: String
   resetTokenExpiry: Float
-  permission: [Permission]
+  permissions: [Permission]
 }
 
 enum Permission {
