@@ -23,6 +23,17 @@ server.express.use((req, res, next) => {
 });
 
 // Use Express middleware to populate current user
+server.express.use(async (req, res, next) => {
+  // Skip if not logged in
+  if (!req.userId) return next();
+
+  const user = await db.query.user(
+    { where: { id: req.userId } },
+    '{id name email permissions}'
+  );
+  req.user = user;
+  next();
+});
 
 server.start(
   {

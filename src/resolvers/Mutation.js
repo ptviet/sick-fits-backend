@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
 const { transport, makeEmail } = require('../mail');
+const { hasPermission } = require('../utils');
 
 const Mutation = {
   // Create Item
@@ -182,6 +183,36 @@ const Mutation = {
       maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year cookie
     });
     // Return the user
+    return updatedUser;
+  },
+
+  // Update Permissions
+  async updatePermissions(parent, args, ctx, info) {
+    // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login first.');
+    }
+    // Query the current user
+    const user = await ctx.db.query.user(
+      { where: { id: ctx.request.userId } },
+      info
+    );
+    // Check if allowed to update
+    hasPermission(user, ['PERMISSIONUPDATE', 'ADMIN']);
+    // Update permissions
+    const updatedUser = await ctx.db.mutation.updateUser(
+      {
+        data: {
+          permissions: {
+            set: args.permissions
+          }
+        },
+        where: {
+          id: args.id
+        }
+      },
+      info
+    );
     return updatedUser;
   }
 };
