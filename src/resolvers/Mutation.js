@@ -221,6 +221,41 @@ const Mutation = {
       info
     );
     return updatedUser;
+  },
+
+  // Add to cart
+  async addToCart(parent, args, ctx, info) {
+    const { userId } = ctx.request;
+    // Check if logged in
+    if (!userId) {
+      throw new Error('Please login first.');
+    }
+    // Query users current cart
+    const [existingCartItem] = await ctx.db.query.cartItems({
+      where: { user: { id: userId }, item: { id: args.id } }
+    });
+    // Check if item is already in cart, increment
+    if (existingCartItem) {
+      const updatedCart = await ctx.db.mutation.updateCartItem(
+        {
+          where: { id: existingCartItem.id },
+          data: { quantity: existingCartItem.quantity + 1 }
+        },
+        info
+      );
+      return updatedCart;
+    }
+    // Or add to cart
+    const createdCart = await ctx.db.mutation.createCartItem(
+      {
+        data: {
+          user: { connect: { id: userId } },
+          item: { connect: { id: args.id } }
+        }
+      },
+      info
+    );
+    return createdCart;
   }
 };
 
