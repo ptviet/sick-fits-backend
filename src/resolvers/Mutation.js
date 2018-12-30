@@ -8,9 +8,20 @@ const Mutation = {
   // Create Item
   async createItem(parent, args, ctx, info) {
     // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login first.');
+    }
     const item = await ctx.db.mutation.createItem(
       {
-        data: { ...args }
+        data: {
+          // Provide Item - User relationship
+          user: {
+            connect: {
+              id: ctx.request.userId
+            }
+          },
+          ...args
+        }
       },
       info
     );
