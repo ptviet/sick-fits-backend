@@ -50,6 +50,25 @@ const Query = {
     }
     // Return the order
     return order;
+  },
+  // Get a list of orders
+  async orders(parent, args, ctx, info) {
+    // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login first.');
+    }
+    // Query the orders
+    const orders = await ctx.db.query.orders(
+      {
+        where: {
+          user: {
+            id: ctx.request.userId
+          }
+        }
+      },
+      info
+    );
+    return orders;
   }
 };
 
