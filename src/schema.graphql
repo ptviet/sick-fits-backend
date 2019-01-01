@@ -40,6 +40,7 @@ type Query {
   itemsConnection(where: ItemWhereInput): ItemConnection!
   me: User
   users: [User]!
+  order(id: ID!): Order
 }
 
 type User {
@@ -48,4 +49,6 @@ type User {
   email: String!
   permissions: [Permission!]!
   cart: [CartItem!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }
