@@ -256,6 +256,36 @@ const Mutation = {
       info
     );
     return createdCart;
+  },
+
+  // Remove from cart
+  async removeFromCart(parent, args, ctx, info) {
+    // Find the cart item
+    const cartItem = await ctx.db.query.cartItem(
+      {
+        where: {
+          id: args.id
+        }
+      },
+      `{id user {id} }`
+    );
+    if (!cartItem) throw new Error('No CartItem found.');
+
+    // Check ownership
+    if (cartItem.user.id !== ctx.request.userId)
+      throw new Error('This item is not in your cart.');
+
+    // Delete the cart item
+    const deleted = await ctx.db.mutation.deleteCartItem(
+      {
+        where: {
+          id: args.id
+        }
+      },
+      info
+    );
+
+    return deleted;
   }
 };
 
