@@ -24,7 +24,7 @@ const Query = {
   async users(parent, args, ctx, info) {
     // Check if logged in
     if (!ctx.request.userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
     // Check if user has the permission to query all the users
     hasPermission(ctx.request.user, ['PERMISSIONUPDATE', 'ADMIN']);
@@ -36,7 +36,7 @@ const Query = {
   async order(parent, args, ctx, info) {
     // Check if logged in
     if (!ctx.request.userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
     // Query the current order
     const order = await ctx.db.query.order({ where: { id: args.id } }, info);
@@ -55,7 +55,7 @@ const Query = {
   async orders(parent, args, ctx, info) {
     // Check if logged in
     if (!ctx.request.userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
     // Query the orders
     const orders = await ctx.db.query.orders(

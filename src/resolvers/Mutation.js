@@ -11,7 +11,7 @@ const Mutation = {
   async createItem(parent, args, ctx, info) {
     // Check if logged in
     if (!ctx.request.userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
     const item = await ctx.db.mutation.createItem(
       {
@@ -32,6 +32,10 @@ const Mutation = {
 
   // Update Item
   async updateItem(parent, args, ctx, info) {
+    // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login.');
+    }
     // Take a copy of the updates
     const updates = { ...args };
     // Remove the ID from the updates
@@ -49,6 +53,10 @@ const Mutation = {
 
   // Delete Item
   async deleteItem(parent, args, ctx, info) {
+    // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login.');
+    }
     const where = { id: args.id };
     // Find the Item
     const item = await ctx.db.query.item({ where }, `{id title user {id} }`);
@@ -194,11 +202,57 @@ const Mutation = {
     return updatedUser;
   },
 
+  // Update Password
+  async updatePassword(parent, args, ctx, info) {
+    // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login.');
+    }
+    // Check if the passwords match
+    if (args.password !== args.confirmPassword) {
+      throw new Error("Password don't match.");
+    }
+    // Check if user exists
+    const user = await ctx.db.query.user({ where: { id: ctx.request.userId } });
+    if (!user) {
+      throw new Error('No user found.');
+    }
+    // Verify the password
+    const valid = await bcrypt.compare(args.currentPassword, user.password);
+    if (!valid) {
+      throw new Error('Invalid password.');
+    }
+    // Hash new password
+    const password = await bcrypt.hash(args.password, 10);
+    // Save new password, remove resetToken field
+    const updatedUser = await ctx.db.mutation.updateUser(
+      {
+        where: { id: user.id },
+        data: {
+          password
+        }
+      },
+      info
+    );
+    // Generate JWT
+    const token = await jwt.sign(
+      { userId: updatedUser.id },
+      process.env.APP_SECRET
+    );
+    // Set the cookie with the token
+    ctx.response.cookie('sickfits_token', token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 365 // 1 year cookie
+    });
+    // Return the user
+    return updatedUser;
+  },
+
   // Update Permissions
   async updatePermissions(parent, args, ctx, info) {
     // Check if logged in
     if (!ctx.request.userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
     // Query the current user
     const user = await ctx.db.query.user(
@@ -229,7 +283,7 @@ const Mutation = {
     const { userId } = ctx.request;
     // Check if logged in
     if (!userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
     // Query users current cart
     const [existingCartItem] = await ctx.db.query.cartItems({
@@ -261,6 +315,10 @@ const Mutation = {
 
   // Remove from cart
   async removeFromCart(parent, args, ctx, info) {
+    // Check if logged in
+    if (!ctx.request.userId) {
+      throw new Error('Please login.');
+    }
     // Find the cart item
     const cartItem = await ctx.db.query.cartItem(
       {
@@ -294,7 +352,7 @@ const Mutation = {
     // Check if logged in, Query the current user
     const { userId } = ctx.request;
     if (!userId) {
-      throw new Error('Please login first.');
+      throw new Error('Please login.');
     }
 
     const user = await ctx.db.query.user(
