@@ -62,7 +62,9 @@ const Query = {
       {
         where: {
           user: {
-            id: ctx.request.userId
+            where: {
+              id: ctx.request.userId
+            }
           }
         }
       },
